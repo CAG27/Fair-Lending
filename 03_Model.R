@@ -20,8 +20,9 @@ candidate_vars <- c("loan_amount",
 df_HMDA_filtered <- df_HMDA %>%
   dplyr::select(approved,all_of(candidate_vars))
 
-model <- glm(approved ~ property_value_num+income_num+LTV_bin_80+LTV_bin_90+LTV_bin_100+LTV_bin_gte100, 
+model <- glm(approved ~ income_num+LTV_bin_80+LTV_bin_90+LTV_bin_100+LTV_bin_gte100, 
              data=df_HMDA_filtered,
              family="binomial")
+summary(model)
 df_HMDA_filtered$preds <- predict(model,df_HMDA_filtered)
 pROC::auc(df_HMDA_filtered$approved,df_HMDA_filtered$preds)
