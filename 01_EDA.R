@@ -53,8 +53,15 @@ for (i in 1:ncol(df_HMDA)){
 #' co.applicant_race.2, co.applicant_race.3, co.applicant_race.4, 
 #' co.applicant_race.5, aus.2, aus.3, aus.4, aus.5, denial_reason.2,
 #' denial_reason.3, denial_reason.4.
-#' 
-#' We will go ahead and remove these
 
-
+#' Assess distributions and frequencies. This will help us determine if any
+#' variables that make it into our final model may need to be transformed
+#' due to skewness
+for (i in 1:ncol(df_HMDA)){
+  if (is.numeric(df_HMDA[[i]])){
+    hist(df_HMDA[[i]])
+  } else {
+    print(df_HMDA %>% dplyr::group_by(df_HMDA[i]) %>% dplyr::summarise(dplyr::n()))
+  }
+}
 
