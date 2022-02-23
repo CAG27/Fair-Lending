@@ -1,20 +1,35 @@
 #' Our assignment is to build a model that predicts whether an application
-#' for Conventional First Liens will be approved or declined. First we need
-#' to filter our data just to those applications that were for these types
-#' of loans. Per the data dictionary, we need to filter using the variable
-#' derived_loan_product_type
-df_HMDA <- df_HMDA %>%
-  dplyr::filter(derived_loan_product_type == "Conventional:First Lien")
+#' for Conventional First Liens will be approved or declined. First we will
+#' assess the univariate AUC statistics for our candidate variables
+candidate_vars <- c("loan_amount",
+                    # "property_value_num",
+                    # "interest_rate_num",
+                    "income_num",
+                    "LTV_bin_10",
+                    "LTV_bin_20",
+                    "LTV_bin_30",
+                    "LTV_bin_40",
+                    "LTV_bin_50",
+                    "LTV_bin_60",
+                    "LTV_bin_70",
+                    "LTV_bin_80",
+                    "LTV_bin_90",
+                    "LTV_bin_100",
+                    "LTV_bin_gte100")
 
-#' This filtering leaves us with 45497 applications for Conventional First Lien
-#' loans in our population of interest. Of these, 1621+38609=40230 of them
-#' were approved, IE had action_taken equal to 1 or 2:
-df_HMDA %>% 
-  dplyr::group_by(action_taken) %>% 
-  dplyr::summarise(count=dplyr::n())
+df_HMDA_filtered <- df_HMDA %>%
+  dplyr::select(approved,all_of(candidate_vars))
 
-#' Create a new binary variable for whether an application was approved,
-#' regardless of if it actually originated
-df_HMDA <- df_HMDA %>%
-  dplyr::mutate(approved = dplyr::case_when(action_taken %in% c(1,2) ~ 1,
-                                            TRUE ~ 0))
+model <- glm(approved ~ loan_amount + interest_rate_num + income_num + LTV_bin_80, data=df_HMDA_filtered)
+df_HMDA_filtered$preds <- predict(model,df_HMDA_filtered)
+pROC::auc(df_HMDA_filtered$approved,df_HMDA_filtered$preds)
+
+model <- glm(approved ~ property_value_num+income_num+LTV_bin_80+LTV_bin_90+LTV_bin_100+LTV_bin_gte100, data=df_HMDA_filtered)
+df_HMDA_filtered$preds <- predict(model,df_HMDA_filtered)
+pROC::auc(df_HMDA_filtered$approved,df_HMDA_filtered$preds)
+
+full.model <- glm(approved ~ ., data=df_HMDA_filtered)
+step.model <- stepAIC(full.model, direction = "backward", 
+                      trace = FALSE)
+df_HMDA_filtered$preds <- predict(step.model,df_HMDA_filtered)
+pROC::auc(df_HMDA_filtered$approved,df_HMDA_filtered$preds)

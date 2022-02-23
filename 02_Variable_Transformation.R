@@ -74,5 +74,8 @@ df_HMDA <- df_HMDA %>%
                   dplyr::case_when(
                     ((LTV >= 10) & (LTV < 20)) ~ 1,
                     TRUE ~ 0))
-                
-                  
+
+df_HMDA <- df_HMDA %>%
+  dplyr::mutate(property_value_num = tidyr::replace_na(as.numeric(tidyr::replace_na(property_value,"0")),0),
+                interest_rate_num = tidyr::replace_na(as.numeric(tidyr::replace_na(interest_rate,"0")),0),
+                income_num = as.numeric(tidyr::replace_na(income,0)))

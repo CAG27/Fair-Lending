@@ -10,6 +10,7 @@ library(dplyr)
 library(tidyr)
 library(MASS)
 library(lubridate)
+library(pROC)
 
 # Read in the data (I saved it to the project directory)
 df_HMDA <- read.csv("msamd_46060_actions_taken_1-2-3.csv")
